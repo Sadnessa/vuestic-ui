@@ -1422,6 +1422,12 @@
         "updateChecked": "The array of checked tree nodes.",
         "updateExpanded": "The array of expanded tree nodes."
       }
+    },
+    "VaColorPicker": {
+      "props": {},
+      "events": {},
+      "methods": {},
+      "slots": {}
     }
   },
   "menu": {
@@ -4681,7 +4687,7 @@
       "changeDefault": {
         "title": "Change default messages",
         "description": "Default messages can be set in `GlobalConfig`. Config is fully typed, so you can use autocomplete to find messages you want to change."
-       }
+      }
     },
     "runtimeUpdate": {
       "title": "Changing language in runtime",
@@ -4692,5 +4698,8 @@
       "description": "If you use vue-i18n we can recommend to store VuesticUI messages under specific key",
       "exampleConfig": "Recommended config structure"
     }
+  },
+  "colorPicker": {
+    "title": "-- Here is the title --"
   }
 }
