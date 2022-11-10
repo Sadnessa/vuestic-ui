@@ -42,7 +42,6 @@ export default defineComponent({
       }
 
       fillCanvas(createGradient('conic', ['#ff0000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#ff00ff', '#ff0000']))
-      // fillCanvas(createGradient('radial', ['rgba(0,0,0,0)', 'black']));
       fillCanvas(createGradient('radial', ['white', 'rgba(0,0,0,0)']))
     }
 
@@ -72,19 +71,19 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-  .va-rounded-color-picker {
-    &__canvas {
-      position: relative;
+.va-rounded-color-picker {
+  &__canvas {
+    position: relative;
+    border-radius: 50%;
+
+    canvas {
       border-radius: 50%;
-
-      canvas {
-        border-radius: 50%;
-      }
-    }
-
-    &__marker {
-      position: absolute;
-      transform: translateX(-50%) translateY(-50%);
     }
   }
+
+  &__marker {
+    position: absolute;
+    transform: translateX(-50%) translateY(-50%);
+  }
+}
 </style>
