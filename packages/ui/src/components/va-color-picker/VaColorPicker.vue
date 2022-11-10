@@ -1,6 +1,7 @@
 <template>
   <div class="va-color-picker">
     <VaRoundedColorPicker v-model="valueComputed" />
+    <VaSquaredColorPicker v-model="valueComputed" />
   </div>
 </template>
 
@@ -8,11 +9,13 @@
 import { defineComponent } from 'vue'
 import { useStateful, useStatefulProps, useStatefulEmits } from '../../composables'
 import VaRoundedColorPicker from './components/VaRoundedColorPicker.vue'
+import VaSquaredColorPicker from './components/VaSquaredColorPicker.vue'
 
 export default defineComponent({
   name: 'VaColorPicker',
   components: {
     VaRoundedColorPicker,
+    VaSquaredColorPicker,
   },
 
   props: {
