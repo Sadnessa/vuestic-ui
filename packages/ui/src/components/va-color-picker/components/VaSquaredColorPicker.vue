@@ -1,8 +1,16 @@
 <template>
   <div class="va-squared-color-picker">
-    <div class="va-squared-color-picker__canvas" @mousedown="mouseDown" @mouseup="mouseUp">
+    <div class="va-squared-color-picker__group">
+      <div class="va-squared-color-picker__canvas" @mousedown="mouseDown" @mouseup="mouseUp">
       <VaColorPickerMarker class="va-squared-color-picker__marker" :color="rgb" :style="{ top: `${position.y}px`, left: `${position.x}px` }" />
       <canvas width="300" height="300" ref="canvas" @mousemove="mouseMove" />
+    </div>
+    <div class="va-squared-color-picker__hue-slider">
+      <VaColorSlider v-model="selectedColor" v-model:hueColor="hue" type='hue' />
+    </div>
+    </div>
+    <div class="va-squared-color-picker__alpha-slider">
+      <VaColorSlider v-model="selectedColor" v-model:hueColor="hue" v-model:alphaValue="alpha" type='alpha' />
     </div>
   </div>
 </template>
@@ -12,11 +20,13 @@ import { computed, defineComponent, onMounted, PropType, ref, watch } from 'vue'
 import { useCanvasCtx, useCanvasGradient, useMarkerPosition } from '../hooks/'
 import { useSyncProp } from '../../../composables/'
 import VaColorPickerMarker from './base/VaColorPickerMarker.vue'
+import VaColorSlider from './base/VaColorSlider.vue'
 
 export default defineComponent({
   name: 'VaSquaredColorPicker',
   components: {
     VaColorPickerMarker,
+    VaColorSlider,
   },
 
   props: {
@@ -28,12 +38,10 @@ export default defineComponent({
     hueColor: {
       type: String,
       required: true,
-      default: '#ff0000',
     },
 
     alphaValue: {
       type: Number,
-      required: true,
       default: 1,
     },
   },
@@ -45,17 +53,17 @@ export default defineComponent({
     const { canvasCtx } = useCanvasCtx(canvas)
     const { createGradient, fillCanvas } = useCanvasGradient(canvasCtx)
     const [selectedColor] = useSyncProp('modelValue', props, emit)
-    const [hueColor] = useSyncProp('hueColor', props, emit)
-    const [alphaValue] = useSyncProp('alphaValue', props, emit)
+    const [hue] = useSyncProp('hueColor', props, emit)
+    const [alpha] = useSyncProp('alphaValue', props, emit)
 
-    const rgb = computed(() => `rgb(${selectedColor.value.join(', ')})`)
+    const rgb = computed(() => `rgb(${selectedColor.value.join(', ')}, ${props.alphaValue})`)
 
     const renderCanvas = () => {
       if (canvasCtx == null) {
         return
       }
 
-      fillCanvas(createGradient('horizontal', ['#fff', hueColor.value]))
+      fillCanvas(createGradient('horizontal', ['#fff', hue.value]))
       fillCanvas(createGradient('vertical', ['rgba(0,0,0,0)', '#000']))
     }
 
@@ -70,7 +78,7 @@ export default defineComponent({
       renderCanvas()
     })
 
-    watch([hueColor, alphaValue], () => {
+    watch([hue, alpha], () => {
       renderCanvas()
       readColor()
     })
@@ -82,6 +90,9 @@ export default defineComponent({
       mouseUp,
       position,
       rgb,
+      selectedColor,
+      hue,
+      alpha,
     }
   },
 })
@@ -89,6 +100,14 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .va-squared-color-picker {
+  &__group {
+    display: flex;
+
+    :first-child {
+      margin-right: 10px;
+    }
+  }
+
   &__canvas {
     position: relative;
   }

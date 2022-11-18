@@ -16,7 +16,7 @@ export default {
   },
 
   setup () {
-    const selectedColor = ref<number[]>([255, 255, 255])
+    const selectedColor = ref('#ff0')
 
     return {
       selectedColor,

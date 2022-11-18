@@ -1,70 +1,97 @@
 <template>
-  <div class="va-rounded-color-picker">
-    <div class="va-rounded-color-picker__canvas" @mousedown="mouseDown" @mouseup="mouseUp">
-      <VaColorPickerMarker class="va-rounded-color-picker__marker" :color="rgb" :style="{ top: `${position.y}px`, left: `${position.x}px` }" />
-      <canvas width="300" height="300" ref="canvas" @mousemove="mouseMove" />
+  <div class="va-rounded-color-picker" :style="{ background: rgb }">
+    {{ l }}
+    <VaHS v-model="hs" />
+    <div class="va-rounded-color-picker__alpha-slider">
+      <!-- <VaColorSlider v-model="selectedColor" v-model:alphaValue="alpha" type='alpha' /> -->
+    </div>
+    <div class="va-rounded-color-picker__lightness-slider">
+      <VaColorSlider2 :gradient="lightnessGradient" v-model="hsl" :position="1" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, PropType, ref } from 'vue'
-import { useCanvasCtx, useCanvasGradient, useMarkerPosition } from '../hooks/'
+import { ColorTranslator } from 'colortranslator'
+import { computed, defineComponent, PropType, ref, watch } from 'vue'
+import { useCanvasCtx, useCanvasGradient } from '../hooks/'
 import { useSyncProp } from '../../../composables/'
-import VaColorPickerMarker from './base/VaColorPickerMarker.vue'
+import VaHS from './base/VaHS.vue'
+import VaColorSlider from './base/VaColorSlider.vue'
+import VaColorSlider2 from './base/VaColorSlider2.vue'
 
 export default defineComponent({
   name: 'VaRoundedColorPicker',
   components: {
-    VaColorPickerMarker,
+    VaHS,
+    // VaColorSlider,
+    VaColorSlider2,
   },
 
   props: {
     modelValue: {
-      type: Array as PropType<number[]>,
+      type: String,
       required: true,
+    },
+
+    hueColor: {
+      type: String,
+      required: true,
+    },
+
+    alphaValue: {
+      type: Number,
+      default: 1,
     },
   },
 
-  emits: ['update:modelValue'],
+  emits: ['update:modelValue', 'update:hueColor', 'update:alphaValue'],
 
   setup (props, { emit }) {
     const canvas = ref<HTMLCanvasElement>()
-    const { canvasCtx } = useCanvasCtx(canvas)
-    const { createGradient, fillCanvas } = useCanvasGradient(canvasCtx)
     const [selectedColor] = useSyncProp('modelValue', props, emit)
+    const [hue] = useSyncProp('hueColor', props, emit)
+    const [alpha] = useSyncProp('alphaValue', props, emit)
 
-    const rgb = computed(() => `rgb(${selectedColor.value.join(', ')})`)
+    const hs = ref([255, 255, 255])
+    const hsl = ref([255, 255, 255])
 
-    const renderCanvas = () => {
-      if (canvasCtx == null) {
-        return
-      }
+    const rgb = computed(() => colorToString(hsl.value))
 
-      fillCanvas(createGradient('conic', ['#ff0000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#ff00ff', '#ff0000']))
-      fillCanvas(createGradient('radial', ['white', 'rgba(0,0,0,0)']))
+    const colorToString = (color: number[]) => {
+      return `rgb(${color.join(', ')})`
     }
 
-    const readColor = () => {
-      const pixel = canvasCtx.value!.getImageData(position.x, position.y, 1, 1).data
-      selectedColor.value = [pixel[0], pixel[1], pixel[2]]
-    }
+    const lightnessGradient = computed(() => {
+      return ['black', colorToString(hs.value)]
+    })
 
-    const { mouseDown, mouseMove, mouseUp, position } = useMarkerPosition(readColor, canvas)
+    const l = computed(() => {
+      return new ColorTranslator(rgb.value).L / new ColorTranslator(colorToString(hs.value)).L
+    })
 
-    onMounted(() => {
-      position.x = canvas.value!.width / 2
-      position.y = canvas.value!.height / 2
-      renderCanvas()
+    watch(selectedColor, () => {
+      const color = new ColorTranslator(selectedColor.value)
+      console.log(color.H, color.S, color.L)
+      hsl.value = [color.R, color.G, color.B]
+      color.setL(100)
+      hs.value = [color.R, color.G, color.B]
+    }, { immediate: true })
+
+    watch(rgb, () => {
+      selectedColor.value = rgb.value
     })
 
     return {
       canvas,
-      mouseDown,
-      mouseMove,
-      mouseUp,
-      position,
       rgb,
+      selectedColor,
+      hue,
+      alpha,
+      hs,
+      lightnessGradient,
+      hsl,
+      l,
     }
   },
 })
